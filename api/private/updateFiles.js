@@ -74,7 +74,7 @@ module.exports = (request, response) => {
                     console.log("First politicians bundle: File uploaded!");
                 });
             querySnapshot.docs.forEach((document) => {
-                politicians.push({ id: document.id, ...document.data() });
+                politicians.push(document.data());
             });
             makeJson();
         })
@@ -103,7 +103,7 @@ module.exports = (request, response) => {
                 });
 
             querySnapshot.docs.forEach((document) => {
-                politicians.push({ id: document.id, ...document.data() });
+                politicians.push(document.data());
             });
             makeJson();
         })
@@ -131,7 +131,7 @@ module.exports = (request, response) => {
 
             var details = [];
             querySnapshot.docs.forEach((document) => {
-                details.push({ id: document.id, ...document.data() });
+                details.push(document.data());
             });
 
             const detailsBufferStream = new stream.PassThrough();
