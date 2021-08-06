@@ -9,12 +9,10 @@ module.exports = (request, response) => {
     }
 
     const admin = require("firebase-admin");
-    const fs = require("fs");
-
-    fs.writeFileSync("./key.json", process.env.GOOGLE_CLOUD_KEY)
+    const stream = require("stream")
 
     const serviceAccount = require("./key.json");
-    
+
     admin.initializeApp({
         credentials: admin.credential.cert(serviceAccount),
         apiKey: "AIzaSyCuueHgTYGlmCv1QKzCKz_Hw4hF7-8XTAA",
@@ -37,20 +35,16 @@ module.exports = (request, response) => {
     const makeJson = () => {
         if (otherOneReady) {
             console.log("Politicians JSON: All politicians loaded!");
-            fs.writeFileSync("politicians.json", JSON.stringify(politicians));
-            console.log("Politicians JSON: File written!");
-            bucket
-                .upload("politicians.json", {
-                    destination: "data/politicians.json",
+            const bufferStream = new stream.PassThrough()
+            bufferStream.end(Buffer.from(JSON.stringify(politicians)))
+            console.log("Politicians JSON: Buffer stream created!");
+            bufferStream.pipe(bucket.file("data/politicians.json").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error)
                 })
-                .then((response) => {
-                    console.log("Politicians JSON: File uploaded! Public download path:", response[0].publicUrl());
-                    fs.unlinkSync("politicians.json");
-                    console.log("Politicians JSON: File deleted!");
+                .on("finish", () => {
+                    console.log("Politicians JSON: File uploaded!");
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
         } else {
             otherOneReady = true;
         }
@@ -64,20 +58,17 @@ module.exports = (request, response) => {
         .then((querySnapshot) => {
             console.log("First politicians: Received response!");
             const firstDocumentsBuffer = database.bundle("first25Documents").add("first25Documents", querySnapshot).build();
-            fs.writeFileSync("firstDocuments.bundle", firstDocumentsBuffer);
-            console.log("First politicians bundle: File written!");
-            bucket
-                .upload("firstDocuments.bundle", {
-                    destination: "data/firstDocuments.bundle",
+            const bufferStream = new stream.PassThrough()
+            bufferStream.end(Buffer.from(firstDocumentsBuffer))
+            console.log("First politicians bundle: Buffer stream created!");
+            
+            bufferStream.pipe(bucket.file("data/firstDocuments.bundle").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error)
                 })
-                .then((response) => {
-                    console.log("First politicians bundle: File uploaded! Public download path:", response[0].publicUrl());
-                    fs.unlinkSync("firstDocuments.bundle");
-                    console.log("First politicians bundle: File deleted!");
+                .on("finish", () => {
+                    console.log("First politicians bundle: File uploaded!");
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
             querySnapshot.docs.forEach((document) => {
                 politicians.push({ id: document.id, ...document.data() });
             });
@@ -95,20 +86,17 @@ module.exports = (request, response) => {
         .then((querySnapshot) => {
             console.log("Last politicians: Received response!");
             const lastDocumentsBuffer = database.bundle("lastDocuments").add("lastDocuments", querySnapshot).build();
-            fs.writeFileSync("lastDocuments.bundle", lastDocumentsBuffer);
-            console.log("Last politicians bundle: File written!");
-            bucket
-                .upload("lastDocuments.bundle", {
-                    destination: "data/lastDocuments.bundle",
+            const bufferStream = new stream.PassThrough()
+            bufferStream.end(Buffer.from(lastDocumentsBuffer))
+            console.log("Last politicians bundle: Buffer stream created!");
+            bufferStream.pipe(bucket.file("data/lastDocuments.bundle").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error)
                 })
-                .then((response) => {
-                    console.log("Last politicians bundle: File uploaded! Public download path:", response[0].publicUrl());
-                    fs.unlinkSync("lastDocuments.bundle");
-                    console.log("Last politicians bundle: File deleted!");
+                .on("finish", () => {
+                    console.log("Last politicians bundle: File uploaded!");
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
+            
             querySnapshot.docs.forEach((document) => {
                 politicians.push({ id: document.id, ...document.data() });
             });
@@ -117,55 +105,44 @@ module.exports = (request, response) => {
         .catch((error) => {
             console.error(error);
         });
-
+        
     database
         .collection("details")
         .get()
         .then((querySnapshot) => {
             console.log("Details: Received response!");
-            const lastDocumentsBuffer = database.bundle("details").add("details", querySnapshot).build();
-            fs.writeFileSync("details.bundle", lastDocumentsBuffer);
-            console.log("Details bundle: File written!");
-            bucket
-                .upload("details.bundle", {
-                    destination: "data/details.bundle",
+            const detailsBuffer = database.bundle("details").add("details", querySnapshot).build();
+            const bufferStream = new stream.PassThrough()
+            bufferStream.end(Buffer.from(detailsBuffer))
+            console.log("Details bundle: Buffer stream created!");
+            bufferStream.pipe(bucket.file("data/details.bundle").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error)
                 })
-                .then((response) => {
-                    console.log("Details bundle: File uploaded! Public download path:", response[0].publicUrl());
-                    fs.unlinkSync("details.bundle");
-                    console.log("Details bundle: File deleted!");
+                .on("finish", () => {
+                    console.log("Details bundle: File uploaded!");
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
 
             var details = [];
             querySnapshot.docs.forEach((document) => {
                 details.push({ id: document.id, ...document.data() });
             });
-            fs.writeFileSync("details.json", JSON.stringify(details));
-            console.log("Details JSON: File written!");
-            bucket
-                .upload("details.json", {
-                    destination: "data/details.json",
+
+            const detailsBufferStream = new stream.PassThrough()
+            detailsBufferStream.end(Buffer.from(JSON.stringify(details)))
+            console.log("Details JSON: Buffer stream created!");
+
+            detailsBufferStream.pipe(bucket.file("data/details.json").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error)
                 })
-                .then((response) => {
-                    console.log("Details JSON: File uploaded! Public download path:", response[0].publicUrl());
-                    fs.unlinkSync("details.json");
-                    console.log("Details JSON: File deleted!");
+                .on("finish", () => {
+                    console.log("Details JSON: File uploaded!");
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
         })
         .catch((error) => {
             console.error(error);
         });
 
     response.status(200).send("done");
-    /*
-    const lastDocuments = database.collection("politicians").orderBy("id").startAt(25).get()
-
-    const lastDocumentsBuffer = database.bundle("lastDocuments").add("lastDocuments", lastDocuments).build()
-*/
 };
