@@ -34,6 +34,14 @@ module.exports = (request, response) => {
     var politicians = [];
     var otherOneReady = false;
 
+    var tasks = 3;
+
+    const callback = () => {
+        if (--tasks === 0) {
+            response.status(200).send("done");
+        }
+    }
+
     const makeJson = () => {
         if (otherOneReady) {
             console.log("Politicians JSON: All politicians loaded!");
@@ -44,9 +52,11 @@ module.exports = (request, response) => {
                 .pipe(bucket.file("data/politicians.json").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
+                    response.status(500).json({ error: error });
                 })
                 .on("finish", () => {
                     console.log("Politicians JSON: File uploaded!");
+                    callback()
                 });
         } else {
             otherOneReady = true;
@@ -69,6 +79,7 @@ module.exports = (request, response) => {
                 .pipe(bucket.file("data/firstDocuments.bundle").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
+                    response.status(500).json({ error: error });
                 })
                 .on("finish", () => {
                     console.log("First politicians bundle: File uploaded!");
@@ -80,6 +91,7 @@ module.exports = (request, response) => {
         })
         .catch((error) => {
             console.error(error);
+            response.status(500).json({ error: error });
         });
 
     database
@@ -97,6 +109,7 @@ module.exports = (request, response) => {
                 .pipe(bucket.file("data/lastDocuments.bundle").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
+                    response.status(500).json({ error: error });
                 })
                 .on("finish", () => {
                     console.log("Last politicians bundle: File uploaded!");
@@ -109,6 +122,7 @@ module.exports = (request, response) => {
         })
         .catch((error) => {
             console.error(error);
+            response.status(500).json({ error: error });
         });
 
     database
@@ -124,9 +138,11 @@ module.exports = (request, response) => {
                 .pipe(bucket.file("data/details.bundle").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
+                    response.status(500).json({ error: error });
                 })
                 .on("finish", () => {
                     console.log("Details bundle: File uploaded!");
+                    callback()
                 });
 
             var details = [];
@@ -142,14 +158,15 @@ module.exports = (request, response) => {
                 .pipe(bucket.file("data/details.json").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
+                    response.status(500).json({ error: error });
                 })
                 .on("finish", () => {
                     console.log("Details JSON: File uploaded!");
+                    callback()
                 });
         })
         .catch((error) => {
             console.error(error);
+            response.status(500).json({ error: error });
         });
-
-    response.status(200).send("done");
 };

@@ -27,7 +27,7 @@ module.exports = (request, response) => {
                     politicians[index][key] = politician[key];
                 });
             });
-            return response.status(200).json(politicians);
+            response.status(200).json(politicians);
         } else {
             otherOneReady = true;
         }
@@ -42,7 +42,7 @@ module.exports = (request, response) => {
         })
         .catch((error) => {
             console.error(error);
-            return response.status(500).json({ error: error });
+            response.status(500).json({ error: error });
         });
     bucket
         .file("data/details.json")
@@ -53,6 +53,6 @@ module.exports = (request, response) => {
         })
         .catch((error) => {
             console.error(error);
-            return response.status(500).json({ error: error });
+            response.status(500).json({ error: error });
         });
 };
