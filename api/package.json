@@ -2,6 +2,9 @@
     "name": "jeloltnyilvantarto-scripts",
     "version": "1.0.0",
     "main": "index.js",
+    "scripts": {
+        "vercel-build": "node ./build.js"
+    },
     "dependencies": {
         "firebase-admin": "^9.11.0"
     }
