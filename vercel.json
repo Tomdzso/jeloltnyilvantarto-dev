@@ -2,5 +2,6 @@
     "github": {
         "silent": true,
         "autoAlias": false
-    }
+    },
+    "rewrites": [{ "source": "/api/v1/files/:filename*", "destination": "/api/v1/files?filename=:filename*" }]
 }

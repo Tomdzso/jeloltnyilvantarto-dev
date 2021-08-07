@@ -70,13 +70,13 @@ module.exports = (request, response) => {
         .get()
         .then((querySnapshot) => {
             console.log("First politicians: Received response!");
-            const firstDocumentsBuffer = database.bundle("first25Documents").add("first25Documents", querySnapshot).build();
+            const firstPoliticiansBuffer = database.bundle("first25Documents").add("first25Documents", querySnapshot).build();
             const bufferStream = new stream.PassThrough();
-            bufferStream.end(Buffer.from(firstDocumentsBuffer));
+            bufferStream.end(Buffer.from(firstPoliticiansBuffer));
             console.log("First politicians bundle: Buffer stream created!");
 
             bufferStream
-                .pipe(bucket.file("data/firstDocuments.bundle").createWriteStream())
+                .pipe(bucket.file("data/firstPoliticians.bundle").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
                     response.status(500).json({ error: error });
@@ -101,12 +101,12 @@ module.exports = (request, response) => {
         .get()
         .then((querySnapshot) => {
             console.log("Last politicians: Received response!");
-            const lastDocumentsBuffer = database.bundle("lastDocuments").add("lastDocuments", querySnapshot).build();
+            const lastPoliticiansBuffer = database.bundle("lastPoliticians").add("lastPoliticians", querySnapshot).build();
             const bufferStream = new stream.PassThrough();
-            bufferStream.end(Buffer.from(lastDocumentsBuffer));
+            bufferStream.end(Buffer.from(lastPoliticiansBuffer));
             console.log("Last politicians bundle: Buffer stream created!");
             bufferStream
-                .pipe(bucket.file("data/lastDocuments.bundle").createWriteStream())
+                .pipe(bucket.file("data/lastPoliticians.bundle").createWriteStream())
                 .on("error", (error) => {
                     console.error(error);
                     response.status(500).json({ error: error });

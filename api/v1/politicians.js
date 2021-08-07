@@ -29,6 +29,11 @@ module.exports = (request, response) => {
                     }
                 });
             });
+            var date = new Date(Date.now());
+            date.setHours(date.getHours() + 1, 1, 0, 0);
+
+            response.setHeader("Cache-Control", "public, max-age=" + Math.round((date.getTime() - Date.now()) / 1000));
+            response.setHeader("Expires", date.toUTCString());
             response.status(200).json(politicians);
         } else {
             otherOneReady = true;
