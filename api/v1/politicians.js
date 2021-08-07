@@ -22,9 +22,11 @@ module.exports = (request, response) => {
     var otherOneReady = false;
     const sendResponse = () => {
         if (otherOneReady) {
-            details.forEach((politician, index) => {
+            details.forEach((politician) => {
                 Object.keys(politician).forEach((key) => {
-                    politicians[index][key] = politician[key];
+                    if (key !== "id" && !(typeof politician[key] === "object" && politician[key].length == 0)) {
+                        politicians[politician.id][key] = politician[key];
+                    }
                 });
             });
             response.status(200).json(politicians);

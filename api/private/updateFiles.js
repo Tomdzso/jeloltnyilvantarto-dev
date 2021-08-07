@@ -40,7 +40,7 @@ module.exports = (request, response) => {
         if (--tasks === 0) {
             response.status(200).send("done");
         }
-    }
+    };
 
     const makeJson = () => {
         if (otherOneReady) {
@@ -56,7 +56,7 @@ module.exports = (request, response) => {
                 })
                 .on("finish", () => {
                     console.log("Politicians JSON: File uploaded!");
-                    callback()
+                    callback();
                 });
         } else {
             otherOneReady = true;
@@ -142,12 +142,12 @@ module.exports = (request, response) => {
                 })
                 .on("finish", () => {
                     console.log("Details bundle: File uploaded!");
-                    callback()
+                    callback();
                 });
 
             var details = [];
             querySnapshot.docs.forEach((document) => {
-                details.push(document.data());
+                details.push({ id: parseInt(document.id), ...document.data() });
             });
 
             const detailsBufferStream = new stream.PassThrough();
@@ -162,7 +162,7 @@ module.exports = (request, response) => {
                 })
                 .on("finish", () => {
                     console.log("Details JSON: File uploaded!");
-                    callback()
+                    callback();
                 });
         })
         .catch((error) => {
