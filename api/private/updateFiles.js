@@ -70,7 +70,7 @@ module.exports = (request, response) => {
         .get()
         .then((querySnapshot) => {
             console.log("First politicians: Received response!");
-            const firstPoliticiansBuffer = database.bundle("first25Documents").add("first25Documents", querySnapshot).build();
+            const firstPoliticiansBuffer = database.bundle("first25Politicians").add("first25Politicians", querySnapshot).build();
             const bufferStream = new stream.PassThrough();
             bufferStream.end(Buffer.from(firstPoliticiansBuffer));
             console.log("First politicians bundle: Buffer stream created!");
