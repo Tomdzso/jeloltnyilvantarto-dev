@@ -41,6 +41,7 @@ module.exports = (request, response) => {
             
                         response.setHeader("Cache-Control", "public, max-age=" + Math.round((date.getTime() - Date.now()) / 1000));
                         response.setHeader("Expires", date.toUTCString());
+                        response.setHeader("Access-Control-Allow-Origin", "*");
                         response.status(200).send(data[0]);
                     })
                     .catch((error) => {
