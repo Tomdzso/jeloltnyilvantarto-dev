@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
         req.headers.authorization.indexOf(process.env.AUTH_B64) === -1
     ) {
         res.setHeader("WWW-Authenticate", "Basic");
-        return res.status(401).json({ message: "Unauthorized: Are you sure you want to lurk around here?" });
+        res.status(401).json({ message: "Unauthorized: Are you sure you want to lurk around here?" });
     }
 
     const config = {
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
         const date = new Date(article.pubDate * 1000);
         var articleData = {
             title: article.title,
-            description: article.recommender,
+            description: article.recommender ?? article.lead,
             published: date,
             politicians: [],
             link: [
@@ -63,8 +63,12 @@ module.exports = async (req, res) => {
                 date.getDate().toString().padStart(2, "0"),
                 article.slug,
             ].join("/"),
-            authors: article.articleAuthors.map((author) => author.name),
+            authors: article.articleAuthors.map((author) => ({ name: author.name, avatar: "https://telex.hu" + author.avatarSrc })),
         };
+        const image = article.coverImage ?? article.imageSrc ?? article.resizedRecommendedBoxImage ?? article.facebookImage;
+        if (image) {
+            articleData.image = "https://telex.hu" + image;
+        }
         article.tags.forEach((tag) => {
             if (Object.keys(politicians).includes(tag.name)) {
                 articleData.politicians.push(database.collection("politicians").doc(politicians[tag.name]));
