@@ -34,7 +34,7 @@ module.exports = (request, response) => {
     var politicians = [];
     var otherOneReady = false;
 
-    var tasks = 3;
+    var tasks = 4;
 
     const callback = () => {
         if (--tasks === 0) {
@@ -162,6 +162,51 @@ module.exports = (request, response) => {
                 })
                 .on("finish", () => {
                     console.log("Details JSON: File uploaded!");
+                    callback();
+                });
+        })
+        .catch((error) => {
+            console.error(error);
+            response.status(500).json({ error: error });
+        });
+    
+    database
+        .collection("pmCandidates")
+        .get()
+        .then((querySnapshot) => {
+            console.log("PM candidates: Received response!");
+            const pmCandidatesBuffer = database.bundle("pmCandidates").add("pmCandidates", querySnapshot).build();
+            const bufferStream = new stream.PassThrough();
+            bufferStream.end(Buffer.from(pmCandidatesBuffer));
+            console.log("PM candidates bundle: Buffer stream created!");
+            bufferStream
+                .pipe(bucket.file("data/pmCandidates.bundle").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error);
+                    response.status(500).json({ error: error });
+                })
+                .on("finish", () => {
+                    console.log("PM candidates bundle: File uploaded!");
+                    callback();
+                });
+
+            var pmCandidates = [];
+            querySnapshot.docs.forEach((document) => {
+                pmCandidates.push({ id: parseInt(document.id), ...document.data() });
+            });
+
+            const pmCandidatesBufferStream = new stream.PassThrough();
+            pmCandidatesBufferStream.end(Buffer.from(JSON.stringify(pmCandidates)));
+            console.log("PM candidates JSON: Buffer stream created!");
+
+            pmCandidatesBufferStream
+                .pipe(bucket.file("data/pmCandidates.json").createWriteStream())
+                .on("error", (error) => {
+                    console.error(error);
+                    response.status(500).json({ error: error });
+                })
+                .on("finish", () => {
+                    console.log("PM candidates JSON: File uploaded!");
                     callback();
                 });
         })
