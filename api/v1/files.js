@@ -1,6 +1,6 @@
 module.exports = (request, response) => {
     const {
-        query: { filename },
+        query: { filename, download },
     } = request;
 
     const admin = require("firebase-admin");
@@ -24,10 +24,10 @@ module.exports = (request, response) => {
 
     const file = bucket.file(filename);
 
-    const shrug = (error) => {
+    const shrug = () => {
         response.status(502).json({ message: "This is probably not a problem with Jelöltnyilvántartó API." });
     };
-    const download = () => {
+    const downloadFile = () => {
         file.getMetadata()
             .then((data) => {
                 response.setHeader("Content-Type", data[0].contentType);
@@ -38,10 +38,14 @@ module.exports = (request, response) => {
                         // store config file in cloud storage?
                         var date = new Date(Date.now());
                         date.setHours(date.getHours() + 1, 1, 0, 0);
-            
+
                         response.setHeader("Cache-Control", "public, max-age=" + Math.round((date.getTime() - Date.now()) / 1000));
                         response.setHeader("Expires", date.toUTCString());
                         response.setHeader("Access-Control-Allow-Origin", "*");
+                        if (download) {
+                            const filenameSplit = filename.split("/");
+                            response.setHeader("Content-Disposition", `attachment; filename="${filenameSplit[filenameSplit.length - 1]}"`);
+                        }
                         response.status(200).send(data[0]);
                     })
                     .catch((error) => {
@@ -62,11 +66,11 @@ module.exports = (request, response) => {
                         return filename.startsWith(path);
                     })
                 ) {
-                    download()
+                    downloadFile();
                 } else {
                     file.isPublic().then((data) => {
                         if (data[0]) {
-                            download();
+                            downloadFile();
                         } else {
                             response.status(403).json({ error: "For Biden" });
                         }
