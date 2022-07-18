@@ -54,11 +54,17 @@ def handleParagraph(paragraph):
         formattedString = unidecode(originalString.lower())
         return "party", formattedString if formattedString in knownOrganizations else originalString
 
+    if "Jelölő szervezet:" in string:
+        return "parties", unidecode(paragraph.findChildren("strong")[0].next_sibling.strip().lower()).split("-")
+
     if "Egyéni választókerület:" in string:
         return "constituency", getConstituency(paragraph.findChildren("strong")[0].next_sibling.strip())
     
-    if "Jelölő szervezetek:" in string:
-        supporterList = paragraph.findChildren("strong")[0].next_sibling.strip().split(", ")
+    if "Jelölő szervezetek:" in string or "Jelöltet támogató szervezetek:" in string:
+        supporters = paragraph.findChildren("strong")[0].next_sibling.strip()
+        if supporters == "–":
+            return
+        supporterList = supporters.split(", ")
         return "supporters", [unidecode(i.lower()) if unidecode(i.lower()) in knownOrganizations else i for i in supporterList]
 
     keys = {
@@ -87,6 +93,7 @@ def handleProfile(profile, index=None, pm=False):
     politicianSoup = BeautifulSoup(profile, "html.parser").find("article")
 
     candidate["name"] = politicianSoup.findChildren("h1", {"class": "entry-title"}, recursive=True)[0].getText()
+    candidate["image"] = politicianSoup.findChildren("img", recursive=True)[0]["src"]
     currentCandidateContent = politicianSoup.findChildren("div", {"class": "entry-content"}, recursive=True)[0]
 
     for paragraph in re.compile("<br\/?>").split(str(currentCandidateContent.findChildren("p")[0])):
@@ -102,7 +109,7 @@ def handleProfile(profile, index=None, pm=False):
             candidate[result[0]] = result[1]
 
     if "supporters" in candidate:
-        if candidate["supporters"] == ["fuggetlen"]:
+        if candidate["supporters"] == ["független"]:
             candidate["supporters"] = []
         elif "party" in candidate:
             try:
@@ -193,14 +200,14 @@ class handler(BaseHTTPRequestHandler):
         firebaseThread = threading.Thread(None, initFirebase)
         firebaseThread.start()
 
-        if part != parts-1:
+        if part == parts-1:
             pmThread = threading.Thread(None, getPmCandidates)
             pmThread.start()
 
         politiciansThread = threading.Thread(None, getPoliticians, args=(part, parts))
         politiciansThread.start()
 
-        if part != parts-1:
+        if part == parts-1:
             pmThread.join()
         politiciansThread.join()
 

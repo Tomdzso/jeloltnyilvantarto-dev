@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
     var politicians = {};
 
-    const politiciansResponse = await (await fetch("https://dev.jeloltek.tk/api/v1/politicians")).json();
+    const politiciansResponse = await (await fetch("https://dev.jeloltek.igenzet.hu/api/v1/politicians")).json();
     politiciansResponse.forEach((politician, index /*van másik*/) => {
         politicians[politician.name] = index.toString().padStart(3, "0");
     });
@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
         admin.initializeApp({
             credentials: admin.credential.cert(serviceAccount),
             apiKey: "AIzaSyCuueHgTYGlmCv1QKzCKz_Hw4hF7-8XTAA",
-            authDomain: "jeloltek.tk",
+            authDomain: "jeloltek.igenzet.hu",
             projectId: "ellenzeki-osszefogas22",
             storageBucket: "ellenzeki-osszefogas22.appspot.com",
             messagingSenderId: "916575293124",

@@ -7,7 +7,7 @@ module.exports = (request, response) => {
         admin.initializeApp({
             credentials: admin.credential.cert(serviceAccount),
             apiKey: "AIzaSyCuueHgTYGlmCv1QKzCKz_Hw4hF7-8XTAA",
-            authDomain: "jeloltek.tk",
+            authDomain: "jeloltek.igenzet.hu",
             projectId: "ellenzeki-osszefogas22",
             storageBucket: "ellenzeki-osszefogas22.appspot.com",
             messagingSenderId: "916575293124",
