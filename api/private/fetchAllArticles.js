@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
         const serviceAccount = require("../key.json");
 
         admin.initializeApp({
-            credentials: admin.credential.cert(serviceAccount),
+            credential: admin.credential.cert(serviceAccount),
             apiKey: "AIzaSyCuueHgTYGlmCv1QKzCKz_Hw4hF7-8XTAA",
             authDomain: "jeloltek.igenzet.hu",
             projectId: "ellenzeki-osszefogas22",
@@ -43,10 +43,31 @@ module.exports = async (req, res) => {
     }
 
     const database = admin.firestore();
-    const batch = database.batch();
 
     var articleNum = 0;
     var remainingArticles;
+
+    const queue = []
+
+    var batch = database.batch();
+    async function processQueue() {
+        while (queue.length !== 0) {
+            const article = queue.shift()
+            batch.set(database.collection("articles").doc(articleNum.toString().padStart(4, "0")), article)
+            articleNum++
+            if (articleNum % 500 === 0) {
+                await batch.commit()
+                batch = database.batch()
+            }
+        }
+        if (remainingArticles === 0) {
+            await batch.commit()
+            res.status(200).send("done")
+        } else {
+            setTimeout(processQueue, 10)
+        }
+    }
+    processQueue()
 
     async function handleArticle(article) {
         const date = new Date(article.pubDate * 1000);
@@ -75,13 +96,9 @@ module.exports = async (req, res) => {
             }
         });
         if (articleData.politicians.length > 0) {
-            batch.set(database.collection("articles").doc(articleNum.toString().padStart(4, "0")), articleData);
-            articleNum++;
+            queue.push(articleData)
         }
-        if (--remainingArticles === 0) {
-            await batch.commit();
-            res.status(200).send("done");
-        }
+        remainingArticles--
     }
 
     async function handlePage(page) {
@@ -92,7 +109,7 @@ module.exports = async (req, res) => {
     }
 
     fetch(
-        "https://telex.hu/api/search?filters=%7B%22tags%22:[%22el%C5%91v%C3%A1laszt%C3%A1s%22],%22superTags%22:[],%22authors%22:[],%22title%22:[]%7D", // keresés az "előválasztás" tag-re
+        "https://telex.hu/api/search?filters=%7B%22tags%22%3A%5B%22ellenz%C3%A9ki%20el%C5%91v%C3%A1laszt%C3%A1s%22%5D,%22superTags%22%3A%5B%5D,%22authors%22%3A%5B%5D,%22title%22%3A%5B%5D%7D", // keresés az "előválasztás" tag-re
         config
     )
         .then((response) => response.json())
@@ -101,7 +118,7 @@ module.exports = async (req, res) => {
             handlePage(data.items);
             for (var i = 2; i <= data.totalPages; i++) {
                 fetch(
-                    "https://telex.hu/api/search?filters=%7B%22tags%22:[%22el%C5%91v%C3%A1laszt%C3%A1s%22],%22superTags%22:[],%22authors%22:[],%22title%22:[]%7D&oldal=" +
+                    "https://telex.hu/api/search?filters=%7B%22tags%22%3A%5B%22ellenz%C3%A9ki%20el%C5%91v%C3%A1laszt%C3%A1s%22%5D,%22superTags%22%3A%5B%5D,%22authors%22%3A%5B%5D,%22title%22%3A%5B%5D%7D&oldal=" +
                         i,
                     config
                 )
